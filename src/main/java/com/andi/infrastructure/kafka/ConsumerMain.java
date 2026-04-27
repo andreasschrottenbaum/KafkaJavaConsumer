@@ -15,8 +15,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
 
+/**
+ * The main entry point for the Kafka Consumer application.
+ * <p>
+ * This class initializes the Kafka connection properties, sets up a resilient
+ * {@link ErrorHandlingDeserializer}, and manages the consumer polling loop.
+ * It coordinates the execution of various {@link UserProcessingStrategy}
+ * implementations for every successfully consumed {@link User} record.
+ * </p>
+ * <strong>Important:</strong> Ensure the {@code BOOTSTRAP_SERVERS_CONFIG}
+ * matches your local or remote Kafka broker IP address.
+ */
 public class ConsumerMain {
-    public static void main(String[] args)
+    volatile boolean running = true;
+
+    /**
+     * Bootstraps the Kafka consumer and starts the infinite polling loop.
+     */
+    void main()
     {
         Properties props = new Properties();
 
@@ -34,7 +50,7 @@ public class ConsumerMain {
         try (KafkaConsumer<String, User> consumer = new KafkaConsumer<>(props, new StringDeserializer(), errorHandlingDeserializer)) {
             consumer.subscribe(Collections.singletonList("test-events"));
 
-            while (true) {
+            while (running) {
                 var records = consumer.poll(Duration.ofMillis(100));
 
                 if (records == null) continue;

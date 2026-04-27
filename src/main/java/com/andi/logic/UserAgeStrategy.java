@@ -6,6 +6,13 @@ import com.andi.domain.UserProcessingStrategy;
 import java.time.LocalDate;
 import java.time.Period;
 
+/**
+ * Strategy for calculating and displaying user age.
+ * <p>
+ * This strategy computes the chronological age of a user by comparing
+ * their {@code birthDate} with the current system date.
+ * </p>
+ */
 public class UserAgeStrategy implements UserProcessingStrategy {
     @Override
     public void process(User user) {

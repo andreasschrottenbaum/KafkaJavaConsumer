@@ -3,6 +3,13 @@ package com.andi.logic;
 import com.andi.domain.User;
 import com.andi.domain.UserProcessingStrategy;
 
+/**
+ * Strategy that filters for highly trusted users.
+ * <p>
+ * This implementation identifies users with a {@code trustLevel} above 8
+ * and highlights them in the console.
+ * </p>
+ */
 public class HighTrustStrategy implements UserProcessingStrategy {
     @Override
     public void process(User user) {
