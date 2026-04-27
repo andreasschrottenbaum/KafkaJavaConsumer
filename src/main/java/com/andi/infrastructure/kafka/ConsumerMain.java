@@ -11,7 +11,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -42,26 +41,37 @@ public class ConsumerMain {
 
         var errorHandlingDeserializer = new ErrorHandlingDeserializer<>(User.class);
 
-        var strategies = new ArrayList<UserProcessingStrategy>();
-        strategies.add(new LogUserStrategy());
-        strategies.add(new HighTrustStrategy());
-        strategies.add(new UserAgeStrategy());
+        var strategies = java.util.List.of(
+            new LogUserStrategy(),
+            new HighTrustStrategy(),
+            new UserAgeStrategy()
+        );
 
-        try (KafkaConsumer<String, User> consumer = new KafkaConsumer<>(props, new StringDeserializer(), errorHandlingDeserializer)) {
+        var consumer = new KafkaConsumer<>(props, new StringDeserializer(), errorHandlingDeserializer);
+        var executorService = java.util.concurrent.Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors()
+        );
+
+        try (consumer; executorService) {
             consumer.subscribe(Collections.singletonList("test-events"));
 
             while (running) {
                 var records = consumer.poll(Duration.ofMillis(100));
-
                 if (records == null) continue;
 
                 for (var record : records) {
                     var user = record.value();
                     if (user == null) continue;
 
-                    for (var strategy : strategies) {
-                        strategy.process(user);
-                    }
+                    executorService.submit(() -> {
+                        try {
+                            for (var strategy : strategies) {
+                                strategy.process(user);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Parallel processing error: " + e.getMessage());
+                        }
+                    });
                 }
             }
         }
