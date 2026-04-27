@@ -38,19 +38,6 @@ public class PlaintextConsumerMain {
                 strategy
         );
 
-        Thread.startVirtualThread(() -> {
-            System.out.println("Press 'q' and Enter to stop the consumer...");
-            try (var scanner = new java.util.Scanner(System.in)) {
-                while (true) {
-                    if (scanner.hasNextLine() && scanner.nextLine().equalsIgnoreCase("q")) {
-                        System.out.println("Shutting down...");
-                        processor.stop();
-                        break;
-                    }
-                }
-            }
-        });
-
         processor.start();
     }
 }

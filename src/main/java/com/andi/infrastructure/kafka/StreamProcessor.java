@@ -40,6 +40,7 @@ public class StreamProcessor<K, V> {
 
     /**
      * Starts the infinite polling loop and initializes the worker thread pool.
+     * Also launches a virtual thread to monitor 'System.in' for a manual shutdown signal ('q').
      * <p>
      * This method uses a try-with-resources statement to ensure that both the
      * {@code KafkaConsumer} and the {@code ExecutorService} are gracefully
@@ -48,6 +49,20 @@ public class StreamProcessor<K, V> {
      * </p>
      */
     public void start() {
+        Thread.startVirtualThread(() -> {
+            System.out.println("Press 'q' and Enter to stop the consumer...");
+            try (var scanner = new java.util.Scanner(System.in)) {
+                while (true) {
+                    if (scanner.hasNextLine() && scanner.nextLine().equalsIgnoreCase("q")) {
+                        System.out.println("Shutting down...");
+                        stop();
+                        break;
+                    }
+                }
+            }
+        });
+
+
         var executorService = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors()
         );
@@ -56,24 +71,29 @@ public class StreamProcessor<K, V> {
             consumer.subscribe(Collections.singletonList(topic));
 
             while (running) {
-                var records = consumer.poll(Duration.ofMillis(100));
-                if (records == null) continue;
+                try {
+                    var records = consumer.poll(Duration.ofMillis(100));
+                    if (records == null) continue;
 
-                for (var record : records) {
-                    V value = record.value();
-                    if (value == null) continue;
+                    for (var record : records) {
+                        V value = record.value();
+                        if (value == null) continue;
 
-                    // Offload processing to the thread pool
-                    executorService.submit(() -> {
-                        try {
-                            processor.process(value);
-                        } catch (Exception e) {
-                            System.err.println("Processing error on topic " + topic + ": " + e.getMessage());
-                        }
-                    });
+                        // Offload processing to the thread pool
+                        executorService.submit(() -> {
+                            try {
+                                processor.process(value);
+                            } catch (Exception e) {
+                                System.err.println("Processing error on topic " + topic + ": " + e.getMessage());
+                            }
+                        });
+                    }
+                } catch (org.apache.kafka.common.errors.WakeupException e) {
+                    if (running) throw e;
                 }
             }
-        } // Auto-close triggers shutdown of executor and consumer here
+        }
+        System.out.println("Processor for " + topic + " stopped cleanly.");
     }
 
     /**
@@ -84,5 +104,6 @@ public class StreamProcessor<K, V> {
      */
     public void stop() {
         this.running = false;
+        consumer.wakeup();
     }
 }
