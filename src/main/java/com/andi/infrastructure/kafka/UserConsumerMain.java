@@ -34,16 +34,16 @@ public class UserConsumerMain {
 
         // Create consumer via centralized factory
         var consumer = KafkaConsumerFactory.createConsumer(
-                "user-consumer",
-                new StringDeserializer(),
-                errorHandlingDeserializer
+            "user-consumer",
+            new StringDeserializer(),
+            errorHandlingDeserializer
         );
 
         // Define the processing pipeline
         var strategies = java.util.List.of(
-                new LogUserStrategy(),
-                new HighTrustUserStrategy(),
-                new UserAgeStrategy()
+            new LogUserStrategy(),
+            new HighTrustUserStrategy(),
+            new UserAgeStrategy()
         );
 
         // Initialize the processor with a Lambda to handle the strategy list

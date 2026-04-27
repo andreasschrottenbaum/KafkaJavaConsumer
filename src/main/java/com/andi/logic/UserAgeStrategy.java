@@ -19,6 +19,6 @@ public class UserAgeStrategy implements MessageProcessor<User> {
         var currentDate = LocalDate.now();
         var age = Period.between(user.birthDate(), currentDate).getYears();
 
-        System.out.println("Age: " + age + "(" + user.birthDate() + ")");
+        System.out.println("Age: " + age + " (" + user.birthDate() + ")");
     }
 }

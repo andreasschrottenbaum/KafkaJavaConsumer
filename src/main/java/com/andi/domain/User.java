@@ -17,10 +17,10 @@ import java.util.UUID;
  * @param lastSeen    Timestamp of the last recorded activity.
  */
 public record User (
-        UUID id,
-        String firstName,
-        String lastName,
-        LocalDate birthDate,
-        int trustLevel,
-        Instant lastSeen
+    UUID id,
+    String firstName,
+    String lastName,
+    LocalDate birthDate,
+    int trustLevel,
+    Instant lastSeen
 ){}

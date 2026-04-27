@@ -24,18 +24,18 @@ public class PlaintextConsumerMain {
     void main() {
         // Initialize consumer via factory with dedicated group-id
         var consumer = KafkaConsumerFactory.createConsumer(
-                "plaintext-consumer",
-                new StringDeserializer(),
-                new StringDeserializer()
+            "plaintext-consumer",
+            new StringDeserializer(),
+            new StringDeserializer()
         );
 
         var strategy = new PlaintextStrategy();
 
         // Create and start the stream processor using a method reference for the strategy
         var processor = new StreamProcessor<>(
-                consumer,
-                "plaintext-events",
-                strategy
+            consumer,
+            "plaintext-events",
+            strategy
         );
 
         processor.start();
