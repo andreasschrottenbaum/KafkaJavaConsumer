@@ -4,76 +4,69 @@ import com.andi.logic.HighTrustUserStrategy;
 import com.andi.logic.LogUserStrategy;
 import com.andi.logic.UserAgeStrategy;
 import com.andi.domain.User;
-import com.andi.domain.UserProcessingStrategy;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Properties;
-
 /**
- * The main entry point for the Kafka Consumer application.
+ * The main entry point for the User-specific Kafka Consumer application.
  * <p>
- * This class initializes the Kafka connection properties, sets up a resilient
- * {@link ErrorHandlingDeserializer}, and manages the consumer polling loop.
- * It coordinates the execution of various {@link UserProcessingStrategy}
- * implementations for every successfully consumed {@link User} record.
+ * This class demonstrates a sophisticated consumer setup using a resilient
+ * {@link ErrorHandlingDeserializer} to map JSON payloads to {@link User} records.
+ * It leverages the {@link StreamProcessor} to execute a pipeline of multiple
+ * processing strategies in parallel.
  * </p>
- * <strong>Important:</strong> Ensure the {@code BOOTSTRAP_SERVERS_CONFIG}
- * matches your local or remote Kafka broker IP address.
  */
 public class UserConsumerMain {
-    volatile boolean running = true;
 
     /**
-     * Bootstraps the Kafka consumer and starts the infinite polling loop.
+     * Bootstraps the Kafka consumer, initializes the strategy pipeline,
+     * and starts the multi-threaded processing loop.
+     * <p>
+     * Instead of a single strategy, this implementation uses a Lambda expression
+     * to iterate over a list of {@code MessageProcessor} implementations for
+     * every incoming record, effectively creating a processing chain.
+     * </p>
      */
     void main()
     {
-        Properties props = new Properties();
-
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.28.166.143:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-consumer");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-
+        // Set up resilient deserialization for User domain objects
         var errorHandlingDeserializer = new ErrorHandlingDeserializer<>(User.class);
 
+        // Create consumer via centralized factory
+        var consumer = KafkaConsumerFactory.createConsumer(
+                "user-consumer",
+                new StringDeserializer(),
+                errorHandlingDeserializer
+        );
+
+        // Define the processing pipeline
         var strategies = java.util.List.of(
-            new LogUserStrategy(),
-            new HighTrustUserStrategy(),
-            new UserAgeStrategy()
+                new LogUserStrategy(),
+                new HighTrustUserStrategy(),
+                new UserAgeStrategy()
         );
 
-        var consumer = new KafkaConsumer<>(props, new StringDeserializer(), errorHandlingDeserializer);
-        var executorService = java.util.concurrent.Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors()
-        );
+        // Initialize the processor with a Lambda to handle the strategy list
+        var processor = new StreamProcessor<>(consumer, "user-events", (user) -> {
+            for (var s : strategies) {
+                s.process(user);
+            }
+        });
 
-        try (consumer; executorService) {
-            consumer.subscribe(Collections.singletonList("user-events"));
-
-            while (running) {
-                var records = consumer.poll(Duration.ofMillis(100));
-                if (records == null) continue;
-
-                for (var record : records) {
-                    var user = record.value();
-                    if (user == null) continue;
-
-                    executorService.submit(() -> {
-                        try {
-                            for (var strategy : strategies) {
-                                strategy.process(user);
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Parallel processing error: " + e.getMessage());
-                        }
-                    });
+        Thread.startVirtualThread(() -> {
+            System.out.println("Press 'q' and Enter to stop the consumer...");
+            try (var scanner = new java.util.Scanner(System.in)) {
+                while (true) {
+                    if (scanner.hasNextLine() && scanner.nextLine().equalsIgnoreCase("q")) {
+                        System.out.println("Shutting down...");
+                        processor.stop();
+                        break;
+                    }
                 }
             }
-        }
+        });
+
+        // Start the infinite polling and execution loop
+        processor.start();
     }
 }

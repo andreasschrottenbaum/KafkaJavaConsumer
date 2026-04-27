@@ -1,7 +1,7 @@
 package com.andi.logic;
 
+import com.andi.domain.MessageProcessor;
 import com.andi.domain.User;
-import com.andi.domain.UserProcessingStrategy;
 
 /**
  * Standard logging strategy for incoming user records.
@@ -10,7 +10,7 @@ import com.andi.domain.UserProcessingStrategy;
  * to the standard output for monitoring purposes.
  * </p>
  */
-public class LogUserStrategy implements UserProcessingStrategy {
+public class LogUserStrategy implements MessageProcessor<User> {
     @Override
     public void process(User user)
     {

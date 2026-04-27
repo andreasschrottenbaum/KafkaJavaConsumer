@@ -1,50 +1,56 @@
 package com.andi.infrastructure.kafka;
 
 import com.andi.logic.PlaintextStrategy;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Properties;
-
+/**
+ * Entry point for the plaintext message consumer application.
+ * <p>
+ * This class demonstrates a minimal consumer implementation using the
+ * {@link KafkaConsumerFactory} and {@link StreamProcessor}. It focuses on
+ * consuming raw string data from the "plaintext-events" topic and
+ * processing it via a single strategy.
+ * </p>
+ */
 public class PlaintextConsumerMain {
-    volatile boolean running = true;
 
+    /**
+     * Bootstraps the plaintext consumer and begins the streaming process.
+     * <p>
+     * Uses standard {@link StringDeserializer} for both key and value as no
+     * complex object mapping is required for this stream.
+     * </p>
+     */
     void main() {
-        Properties props = new Properties();
-
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.28.166.143:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "plaintext-consumer");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-
-        var plaintextStrategy = new PlaintextStrategy();
-
-        var consumer = new KafkaConsumer<String, String>(props);
-        var executorService = java.util.concurrent.Executors.newFixedThreadPool(
-                Runtime.getRuntime().availableProcessors()
+        // Initialize consumer via factory with dedicated group-id
+        var consumer = KafkaConsumerFactory.createConsumer(
+                "plaintext-consumer",
+                new StringDeserializer(),
+                new StringDeserializer()
         );
 
-        try (consumer; executorService) {
-            consumer.subscribe(Collections.singletonList("plaintext-events"));
+        var strategy = new PlaintextStrategy();
 
-            while (running) {
-                var records = consumer.poll(Duration.ofMillis(100));
-                if (records == null) continue;
+        // Create and start the stream processor using a method reference for the strategy
+        var processor = new StreamProcessor<>(
+                consumer,
+                "plaintext-events",
+                strategy
+        );
 
-                for (var record : records) {
-                    executorService.submit(() -> {
-                        try {
-                            plaintextStrategy.process(record.value());
-                        } catch (Exception e) {
-                            System.err.println("Error while parsing message. " + e.getMessage());
-                        }
-                    });
+        Thread.startVirtualThread(() -> {
+            System.out.println("Press 'q' and Enter to stop the consumer...");
+            try (var scanner = new java.util.Scanner(System.in)) {
+                while (true) {
+                    if (scanner.hasNextLine() && scanner.nextLine().equalsIgnoreCase("q")) {
+                        System.out.println("Shutting down...");
+                        processor.stop();
+                        break;
+                    }
                 }
             }
-        }
+        });
+
+        processor.start();
     }
 }

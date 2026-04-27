@@ -1,7 +1,7 @@
 package com.andi.logic;
 
+import com.andi.domain.MessageProcessor;
 import com.andi.domain.User;
-import com.andi.domain.UserProcessingStrategy;
 
 /**
  * Strategy that filters for highly trusted users.
@@ -10,7 +10,7 @@ import com.andi.domain.UserProcessingStrategy;
  * and highlights them in the console.
  * </p>
  */
-public class HighTrustUserStrategy implements UserProcessingStrategy {
+public class HighTrustUserStrategy implements MessageProcessor<User> {
     @Override
     public void process(User user) {
         if (user.trustLevel() > 8) {

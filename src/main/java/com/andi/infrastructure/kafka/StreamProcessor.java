@@ -1,0 +1,88 @@
+package com.andi.infrastructure.kafka;
+
+import com.andi.domain.MessageProcessor;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.concurrent.Executors;
+
+/**
+ * A generic engine for consuming and processing Kafka message streams.
+ * <p>
+ * The {@code StreamProcessor} decouples the Kafka polling infrastructure from
+ * the actual message processing logic. It manages its own thread pool to
+ * execute {@link MessageProcessor} tasks concurrently, ensuring that the
+ * main polling loop remains responsive.
+ * </p>
+ *
+ * @param <K> The type of the Kafka message key.
+ * @param <V> The type of the Kafka message value (payload).
+ */
+public class StreamProcessor<K, V> {
+    private final KafkaConsumer<K, V> consumer;
+    private final String topic;
+    private final MessageProcessor<V> processor;
+    private volatile boolean running = true;
+
+    /**
+     * Constructs a new StreamProcessor.
+     *
+     * @param consumer  The pre-configured {@link KafkaConsumer} instance.
+     * @param topic     The name of the Kafka topic to subscribe to.
+     * @param processor The implementation of {@link MessageProcessor} defining
+     * what happens with each message.
+     */
+    public StreamProcessor(KafkaConsumer<K, V> consumer, String topic, MessageProcessor<V> processor) {
+        this.consumer = consumer;
+        this.topic = topic;
+        this.processor = processor;
+    }
+
+    /**
+     * Starts the infinite polling loop and initializes the worker thread pool.
+     * <p>
+     * This method uses a try-with-resources statement to ensure that both the
+     * {@code KafkaConsumer} and the {@code ExecutorService} are gracefully
+     * shut down when the loop terminates. Processing is offloaded to a
+     * fixed thread pool based on the available system processors.
+     * </p>
+     */
+    public void start() {
+        var executorService = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors()
+        );
+
+        try (consumer; executorService) {
+            consumer.subscribe(Collections.singletonList(topic));
+
+            while (running) {
+                var records = consumer.poll(Duration.ofMillis(100));
+                if (records == null) continue;
+
+                for (var record : records) {
+                    V value = record.value();
+                    if (value == null) continue;
+
+                    // Offload processing to the thread pool
+                    executorService.submit(() -> {
+                        try {
+                            processor.process(value);
+                        } catch (Exception e) {
+                            System.err.println("Processing error on topic " + topic + ": " + e.getMessage());
+                        }
+                    });
+                }
+            }
+        } // Auto-close triggers shutdown of executor and consumer here
+    }
+
+    /**
+     * Signals the polling loop to stop gracefully.
+     * <p>
+     * The loop will finish its current poll/process cycle before terminating.
+     * </p>
+     */
+    public void stop() {
+        this.running = false;
+    }
+}

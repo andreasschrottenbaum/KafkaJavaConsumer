@@ -1,7 +1,7 @@
 package com.andi.logic;
 
+import com.andi.domain.MessageProcessor;
 import com.andi.domain.User;
-import com.andi.domain.UserProcessingStrategy;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -13,7 +13,7 @@ import java.time.Period;
  * their {@code birthDate} with the current system date.
  * </p>
  */
-public class UserAgeStrategy implements UserProcessingStrategy {
+public class UserAgeStrategy implements MessageProcessor<User> {
     @Override
     public void process(User user) {
         var currentDate = LocalDate.now();
