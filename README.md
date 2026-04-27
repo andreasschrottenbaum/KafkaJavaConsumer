@@ -27,7 +27,7 @@ Before running the application, ensure you have the following:
 ### Network & IP Settings
 The consumer is currently configured to connect to a specific Kafka broker. **You must update the IP address** in `ConsumerMain.java` to match your environment:
 
-```
+```java
 // infrastructure/kafka/ConsumerMain.java
 props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "YOUR_KAFKA_IP:9092");
 ```
