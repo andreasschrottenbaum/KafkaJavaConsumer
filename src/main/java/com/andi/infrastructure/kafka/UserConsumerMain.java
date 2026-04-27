@@ -1,6 +1,6 @@
 package com.andi.infrastructure.kafka;
 
-import com.andi.logic.HighTrustStrategy;
+import com.andi.logic.HighTrustUserStrategy;
 import com.andi.logic.LogUserStrategy;
 import com.andi.logic.UserAgeStrategy;
 import com.andi.domain.User;
@@ -25,7 +25,7 @@ import java.util.Properties;
  * <strong>Important:</strong> Ensure the {@code BOOTSTRAP_SERVERS_CONFIG}
  * matches your local or remote Kafka broker IP address.
  */
-public class ConsumerMain {
+public class UserConsumerMain {
     volatile boolean running = true;
 
     /**
@@ -36,14 +36,14 @@ public class ConsumerMain {
         Properties props = new Properties();
 
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.28.166.143:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "java-playground-consumer");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-consumer");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         var errorHandlingDeserializer = new ErrorHandlingDeserializer<>(User.class);
 
         var strategies = java.util.List.of(
             new LogUserStrategy(),
-            new HighTrustStrategy(),
+            new HighTrustUserStrategy(),
             new UserAgeStrategy()
         );
 
@@ -53,7 +53,7 @@ public class ConsumerMain {
         );
 
         try (consumer; executorService) {
-            consumer.subscribe(Collections.singletonList("test-events"));
+            consumer.subscribe(Collections.singletonList("user-events"));
 
             while (running) {
                 var records = consumer.poll(Duration.ofMillis(100));

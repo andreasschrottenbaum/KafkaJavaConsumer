@@ -10,7 +10,7 @@ import com.andi.domain.UserProcessingStrategy;
  * and highlights them in the console.
  * </p>
  */
-public class HighTrustStrategy implements UserProcessingStrategy {
+public class HighTrustUserStrategy implements UserProcessingStrategy {
     @Override
     public void process(User user) {
         if (user.trustLevel() > 8) {
