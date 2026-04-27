@@ -14,7 +14,7 @@ public class HighTrustUserStrategy implements MessageProcessor<User> {
     @Override
     public void process(User user) {
         if (user.trustLevel() > 8) {
-            System.out.println("🌟 Trusted User: ID" + user.id() +" 🌟");
+            System.out.println("🌟 Trusted User: ID " + user.id() +" 🌟");
         }
     }
 }
