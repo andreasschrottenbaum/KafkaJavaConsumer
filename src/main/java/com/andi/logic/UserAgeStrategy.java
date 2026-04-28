@@ -14,11 +14,25 @@ import java.time.Period;
  * </p>
  */
 public class UserAgeStrategy implements MessageProcessor<User> {
+
+    /**
+     * Processes the user record by calculating their age and printing it
+     * alongside their birth date to the console.
+     * @param user The user record to process.
+     */
     @Override
     public void process(User user) {
-        var currentDate = LocalDate.now();
-        var age = Period.between(user.birthDate(), currentDate).getYears();
+        System.out.println("Age: " + getAge(user) + " (" + user.birthDate() + ")");
+    }
 
-        System.out.println("Age: " + age + " (" + user.birthDate() + ")");
+    /**
+     * Calculates the chronological age in years based on the user's birth date
+     * relative to the current system date.
+     * @param user The user whose age is to be calculated.
+     * @return The number of full years elapsed since the birth date.
+     */
+    public int getAge(User user) {
+        var currentDate = LocalDate.now();
+        return Period.between(user.birthDate(), currentDate).getYears();
     }
 }

@@ -1,7 +1,8 @@
 package com.andi.infrastructure.kafka;
 
+import com.andi.logic.AdultCheckStrategy;
 import com.andi.logic.HighTrustUserStrategy;
-import com.andi.logic.LogUserStrategy;
+import com.andi.logic.LogUserNameStrategy;
 import com.andi.logic.UserAgeStrategy;
 import com.andi.domain.User;
 
@@ -41,9 +42,10 @@ public class UserConsumerMain {
 
         // Define the processing pipeline
         var strategies = java.util.List.of(
-            new LogUserStrategy(),
+            new LogUserNameStrategy(),
             new HighTrustUserStrategy(),
-            new UserAgeStrategy()
+            new UserAgeStrategy(),
+            new AdultCheckStrategy()
         );
 
         // Initialize the processor with a Lambda to handle the strategy list

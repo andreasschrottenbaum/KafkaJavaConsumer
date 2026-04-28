@@ -11,6 +11,11 @@ import com.andi.domain.MessageProcessor;
  * </p>
  */
 public class PlaintextStrategy implements MessageProcessor<String> {
+
+    /**
+     * Processes a raw string message by printing it directly to the console.
+     * @param input The plaintext message received from the stream.
+     */
     @Override
     public void process(String input) {
         System.out.println(input);
