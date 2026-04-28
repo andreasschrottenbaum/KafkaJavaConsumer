@@ -7,12 +7,12 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class UserBuilder {
-    private UUID id = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
     private String firstName = "Default";
     private String lastName =  "User";
     private LocalDate birthDate = LocalDate.now().minusYears(42);
     private int trustLevel = 1;
-    private Instant lastSeen = Instant.now();
+    private final Instant lastSeen = Instant.now();
 
     public static UserBuilder anyUser() {
         return new UserBuilder();
