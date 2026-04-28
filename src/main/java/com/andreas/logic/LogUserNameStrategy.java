@@ -1,5 +1,6 @@
 package com.andreas.logic;
 
+import com.andreas.domain.MessageEmitter;
 import com.andreas.domain.MessageProcessor;
 import com.andreas.domain.User;
 
@@ -11,6 +12,11 @@ import com.andreas.domain.User;
  * </p>
  */
 public class LogUserNameStrategy implements MessageProcessor<User> {
+    private final MessageEmitter emitter;
+
+    public LogUserNameStrategy(MessageEmitter emitter) {
+        this.emitter = emitter;
+    }
 
     /**
      * Processes the user record by logging the full name to the console.
@@ -18,7 +24,7 @@ public class LogUserNameStrategy implements MessageProcessor<User> {
      */
     @Override
     public void process(User user) {
-        System.out.println("LOG: processing user " + getName(user));
+        emitter.emit("LOG: processing user " + getName(user));
     }
 
     /**

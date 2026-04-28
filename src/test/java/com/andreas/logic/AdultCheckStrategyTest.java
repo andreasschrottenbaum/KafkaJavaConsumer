@@ -1,23 +1,37 @@
 package com.andreas.logic;
 
+import com.andreas.domain.MessageEmitter;
 import com.andreas.util.UserBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 public class AdultCheckStrategyTest {
+    @Mock
+    private MessageEmitter emitterMock;
+
     private AdultCheckStrategy strategy;
+    private Clock clock;
 
     @BeforeEach
     void setUp() {
-        strategy = new AdultCheckStrategy();
+        var fixedDate = LocalDate.of(2026, 4, 28);
+        this.clock = Clock.fixed(fixedDate.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
+
+        strategy = new AdultCheckStrategy(emitterMock, clock);
     }
 
     @ParameterizedTest
@@ -29,23 +43,15 @@ public class AdultCheckStrategyTest {
         "30, an adult"
     })
     void testAgeCategorization(int yearsToSubtract, String expectedState) {
-        var birthDate = LocalDate.now().minusYears(yearsToSubtract);
+        var result = strategy.determineState(yearsToSubtract);
 
-        var user = UserBuilder
-                .anyUser()
-                .withBirthDate(birthDate)
-                .build();
-
-        var result = strategy.formatOutput(user);
-
-        assertTrue(result.contains(expectedState),
-                "Expected  output to contain '" + expectedState + "' for age based on -" + yearsToSubtract + " years");
+        assertEquals(expectedState, result);
     }
 
     @Test
     @DisplayName("Full string format check")
     void testFullStringFormat() {
-        var birthDate = LocalDate.now().minusYears(43);
+        var birthDate = LocalDate.now(clock).minusYears(43);
 
         var user = UserBuilder
                 .anyUser()
@@ -53,8 +59,8 @@ public class AdultCheckStrategyTest {
                 .withName("Andreas", "Schrottenbaum")
                 .build();
 
-        var result = strategy.formatOutput(user);
+        strategy.process(user);
 
-        assertEquals("User Andreas Schrottenbaum is an adult", result);
+        verify(emitterMock).emit("User Andreas Schrottenbaum is an adult");
     }
 }

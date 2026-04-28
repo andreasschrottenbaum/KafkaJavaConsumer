@@ -1,8 +1,10 @@
 package com.andreas.logic;
 
+import com.andreas.domain.MessageEmitter;
 import com.andreas.domain.MessageProcessor;
 import com.andreas.domain.User;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -14,25 +16,37 @@ import java.time.Period;
  * </p>
  */
 public class UserAgeStrategy implements MessageProcessor<User> {
+    private final MessageEmitter emitter;
+    private final Clock clock;
+
+    public UserAgeStrategy(MessageEmitter emitter) {
+        this.emitter = emitter;
+        this.clock = Clock.systemDefaultZone();
+    }
+
+    public UserAgeStrategy(MessageEmitter emitter, Clock clock) {
+        this.emitter = emitter;
+        this.clock = clock;
+    }
 
     /**
      * Processes the user record by calculating their age and printing it
-     * alongside their birth date to the console.
+     * alongside their birthdate to the console.
      * @param user The user record to process.
      */
     @Override
     public void process(User user) {
-        System.out.println("Age: " + getAge(user) + " (" + user.birthDate() + ")");
+        emitter.emit("Age: " + getAge(user) + " (" + user.birthDate() + ")");
     }
 
     /**
-     * Calculates the chronological age in years based on the user's birth date
+     * Calculates the chronological age in years based on the user's birthdate
      * relative to the current system date.
      * @param user The user whose age is to be calculated.
-     * @return The number of full years elapsed since the birth date.
+     * @return The number of full years elapsed since the birthdate.
      */
     public int getAge(User user) {
-        var currentDate = LocalDate.now();
+        var currentDate = LocalDate.now(clock);
         return Period.between(user.birthDate(), currentDate).getYears();
     }
 }

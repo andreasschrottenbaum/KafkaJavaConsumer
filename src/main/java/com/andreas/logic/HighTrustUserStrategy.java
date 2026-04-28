@@ -1,5 +1,6 @@
 package com.andreas.logic;
 
+import com.andreas.domain.MessageEmitter;
 import com.andreas.domain.MessageProcessor;
 import com.andreas.domain.User;
 
@@ -11,6 +12,11 @@ import com.andreas.domain.User;
  * </p>
  */
 public class HighTrustUserStrategy implements MessageProcessor<User> {
+    private final MessageEmitter emitter;
+
+    public HighTrustUserStrategy(MessageEmitter emitter) {
+        this.emitter = emitter;
+    }
 
     /**
      * Processes the user record and prints a special highlight to the console
@@ -20,7 +26,7 @@ public class HighTrustUserStrategy implements MessageProcessor<User> {
     @Override
     public void process(User user) {
         if (isTrusted(user)) {
-            System.out.println("🌟 Trusted User: ID " + user.id() +" 🌟");
+            emitter.emit("🌟 Trusted User: ID " + user.id() +" 🌟");
         }
     }
 

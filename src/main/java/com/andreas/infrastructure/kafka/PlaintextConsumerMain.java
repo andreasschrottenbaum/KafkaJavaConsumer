@@ -1,5 +1,6 @@
 package com.andreas.infrastructure.kafka;
 
+import com.andreas.infrastructure.ConsoleEmitter;
 import com.andreas.logic.PlaintextStrategy;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
@@ -29,7 +30,10 @@ public class PlaintextConsumerMain {
             new StringDeserializer()
         );
 
-        var strategy = new PlaintextStrategy();
+        // Centralized output channel to be shared across all processing strategies
+        var consoleEmitter = new ConsoleEmitter();
+
+        var strategy = new PlaintextStrategy(consoleEmitter);
 
         // Create and start the stream processor using a method reference for the strategy
         var processor = new StreamProcessor<>(

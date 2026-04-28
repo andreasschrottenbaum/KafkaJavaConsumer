@@ -1,8 +1,10 @@
 package com.andreas.logic;
 
+import com.andreas.domain.MessageEmitter;
 import com.andreas.domain.MessageProcessor;
 import com.andreas.domain.User;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -14,6 +16,18 @@ import java.time.Period;
  * </p>
  */
 public class AdultCheckStrategy implements MessageProcessor<User> {
+    private final MessageEmitter emitter;
+    private final Clock clock;
+
+    public AdultCheckStrategy(MessageEmitter emitter) {
+        this.emitter = emitter;
+        this.clock = Clock.systemDefaultZone();
+    }
+
+    public AdultCheckStrategy(MessageEmitter emitter, Clock clock) {
+        this.emitter = emitter;
+        this.clock = clock;
+    }
 
     /**
      * Processes the user by printing the formatted age information to the console.
@@ -21,7 +35,7 @@ public class AdultCheckStrategy implements MessageProcessor<User> {
      */
     @Override
     public void process(User user) {
-        System.out.println(formatOutput(user));
+        emitter.emit(formatOutput(user));
     }
 
     /**
@@ -30,7 +44,7 @@ public class AdultCheckStrategy implements MessageProcessor<User> {
      * @return A formatted string describing the user's current age state.
      */
     String formatOutput(User user) {
-        var currentDate = LocalDate.now();
+        var currentDate = LocalDate.now(clock);
         var age = Period.between(user.birthDate(), currentDate).getYears();
         var state = determineState(age);
 
@@ -42,7 +56,7 @@ public class AdultCheckStrategy implements MessageProcessor<User> {
      * @param age The age in years.
      * @return A string representation of the age group (kid, minor, young adult, or adult).
      */
-    private String determineState(int age) {
+    public String determineState(int age) {
         if (age < 10) return "a kid";
         if (age < 18) return "a minor";
         if (age < 21) return "a young adult";

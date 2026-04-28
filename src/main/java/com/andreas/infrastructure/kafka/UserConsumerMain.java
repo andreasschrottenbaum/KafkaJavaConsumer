@@ -1,5 +1,6 @@
 package com.andreas.infrastructure.kafka;
 
+import com.andreas.infrastructure.ConsoleEmitter;
 import com.andreas.logic.AdultCheckStrategy;
 import com.andreas.logic.HighTrustUserStrategy;
 import com.andreas.logic.LogUserNameStrategy;
@@ -33,6 +34,9 @@ public class UserConsumerMain {
         // Set up resilient deserialization for User domain objects
         var errorHandlingDeserializer = new ErrorHandlingDeserializer<>(User.class);
 
+        // Centralized output channel to be shared across all processing strategies
+        var emitter = new ConsoleEmitter();
+
         // Create consumer via centralized factory
         var consumer = KafkaConsumerFactory.createConsumer(
             "user-consumer",
@@ -42,10 +46,10 @@ public class UserConsumerMain {
 
         // Define the processing pipeline
         var strategies = java.util.List.of(
-            new LogUserNameStrategy(),
-            new HighTrustUserStrategy(),
-            new UserAgeStrategy(),
-            new AdultCheckStrategy()
+            new LogUserNameStrategy(emitter),
+            new HighTrustUserStrategy(emitter),
+            new UserAgeStrategy(emitter),
+            new AdultCheckStrategy(emitter)
         );
 
         // Initialize the processor with a Lambda to handle the strategy list

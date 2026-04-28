@@ -1,5 +1,6 @@
 package com.andreas.logic;
 
+import com.andreas.domain.MessageEmitter;
 import com.andreas.domain.MessageProcessor;
 
 /**
@@ -11,6 +12,11 @@ import com.andreas.domain.MessageProcessor;
  * </p>
  */
 public class PlaintextStrategy implements MessageProcessor<String> {
+    private final MessageEmitter emitter;
+
+    public PlaintextStrategy(MessageEmitter emitter) {
+        this.emitter = emitter;
+    }
 
     /**
      * Processes a raw string message by printing it directly to the console.
@@ -18,6 +24,6 @@ public class PlaintextStrategy implements MessageProcessor<String> {
      */
     @Override
     public void process(String input) {
-        System.out.println(input);
+        emitter.emit(input);
     }
 }
