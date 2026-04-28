@@ -31,7 +31,7 @@ A custom wrapper around Jackson that prevents "Poison Pill" messages from crashi
 
 ## Project Structure
 ```
-com.andi
+com.andreas
 ├── domain
 │   ├── User.java                     // Domain Model (Record)
 │   └── MessageProcessor.java         // Generic Strategy Interface

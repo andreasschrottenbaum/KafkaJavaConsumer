@@ -1,4 +1,4 @@
-package com.andi.infrastructure.kafka;
+package com.andreas.infrastructure.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

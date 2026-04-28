@@ -1,6 +1,6 @@
-package com.andi.infrastructure.kafka;
+package com.andreas.infrastructure.kafka;
 
-import com.andi.logic.PlaintextStrategy;
+import com.andreas.logic.PlaintextStrategy;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 /**

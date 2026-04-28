@@ -1,6 +1,6 @@
-package com.andi.logic;
+package com.andreas.logic;
 
-import com.andi.util.UserBuilder;
+import com.andreas.util.UserBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;

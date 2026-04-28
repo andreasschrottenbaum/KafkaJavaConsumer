@@ -1,6 +1,6 @@
-package com.andi.logic;
+package com.andreas.logic;
 
-import com.andi.domain.MessageProcessor;
+import com.andreas.domain.MessageProcessor;
 
 /**
  * A simple implementation of {@link MessageProcessor} for raw string data.

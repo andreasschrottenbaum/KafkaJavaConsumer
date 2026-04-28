@@ -1,10 +1,10 @@
-package com.andi.infrastructure.kafka;
+package com.andreas.infrastructure.kafka;
 
-import com.andi.logic.AdultCheckStrategy;
-import com.andi.logic.HighTrustUserStrategy;
-import com.andi.logic.LogUserNameStrategy;
-import com.andi.logic.UserAgeStrategy;
-import com.andi.domain.User;
+import com.andreas.logic.AdultCheckStrategy;
+import com.andreas.logic.HighTrustUserStrategy;
+import com.andreas.logic.LogUserNameStrategy;
+import com.andreas.logic.UserAgeStrategy;
+import com.andreas.domain.User;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
 

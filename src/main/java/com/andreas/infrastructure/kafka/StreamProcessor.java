@@ -1,6 +1,6 @@
-package com.andi.infrastructure.kafka;
+package com.andreas.infrastructure.kafka;
 
-import com.andi.domain.MessageProcessor;
+import com.andreas.domain.MessageProcessor;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import java.time.Duration;
 import java.util.Collections;

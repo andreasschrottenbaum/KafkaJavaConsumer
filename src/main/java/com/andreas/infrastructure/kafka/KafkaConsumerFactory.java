@@ -1,4 +1,4 @@
-package com.andi.infrastructure.kafka;
+package com.andreas.infrastructure.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;

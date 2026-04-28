@@ -1,4 +1,4 @@
-package com.andi.domain;
+package com.andreas.domain;
 
 import java.time.Instant;
 import java.time.LocalDate;

@@ -1,6 +1,6 @@
-package com.andi.util;
+package com.andreas.util;
 
-import com.andi.domain.User;
+import com.andreas.domain.User;
 
 import java.time.Instant;
 import java.time.LocalDate;

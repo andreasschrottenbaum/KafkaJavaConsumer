@@ -1,4 +1,4 @@
-package com.andi.domain;
+package com.andreas.domain;
 
 /**
  * Functional interface for processing messages consumed from Kafka.

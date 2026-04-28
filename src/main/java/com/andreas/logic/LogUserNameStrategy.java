@@ -1,7 +1,7 @@
-package com.andi.logic;
+package com.andreas.logic;
 
-import com.andi.domain.MessageProcessor;
-import com.andi.domain.User;
+import com.andreas.domain.MessageProcessor;
+import com.andreas.domain.User;
 
 /**
  * Standard logging strategy for incoming user records.
