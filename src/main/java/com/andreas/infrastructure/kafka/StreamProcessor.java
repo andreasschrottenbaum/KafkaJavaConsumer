@@ -1,7 +1,7 @@
 package com.andreas.infrastructure.kafka;
 
 import com.andreas.domain.MessageProcessor;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.Consumer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.Executors;
@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
  * @param <V> The type of the Kafka message value (payload).
  */
 public class StreamProcessor<K, V> {
-    private final KafkaConsumer<K, V> consumer;
+    private final Consumer<K, V> consumer;
     private final String topic;
     private final MessageProcessor<V> processor;
     private volatile boolean running = true;
@@ -27,12 +27,12 @@ public class StreamProcessor<K, V> {
     /**
      * Constructs a new StreamProcessor.
      *
-     * @param consumer  The pre-configured {@link KafkaConsumer} instance.
+     * @param consumer  The pre-configured {@link Consumer} instance.
      * @param topic     The name of the Kafka topic to subscribe to.
      * @param processor The implementation of {@link MessageProcessor} defining
      * what happens with each message.
      */
-    public StreamProcessor(KafkaConsumer<K, V> consumer, String topic, MessageProcessor<V> processor) {
+    public StreamProcessor(Consumer<K, V> consumer, String topic, MessageProcessor<V> processor) {
         this.consumer = consumer;
         this.topic = topic;
         this.processor = processor;
@@ -43,7 +43,7 @@ public class StreamProcessor<K, V> {
      * Also launches a virtual thread to monitor 'System.in' for a manual shutdown signal ('q').
      * <p>
      * This method uses a try-with-resources statement to ensure that both the
-     * {@code KafkaConsumer} and the {@code ExecutorService} are gracefully
+     * {@code Consumer} and the {@code ExecutorService} are gracefully
      * shut down when the loop terminates. Processing is offloaded to a
      * fixed thread pool based on the available system processors.
      * </p>
